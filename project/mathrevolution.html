@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>数学大革命 - 2.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background: #1a1a1a;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            color: #333;
+        }
+
+        /* 背景纹理 */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at center, #2c3e50 0%, #000000 100%);
+            opacity: 1;
+            z-index: 0;
+        }
+
+        /* 顶部大标题 */
+        .main-header {
+            background: linear-gradient(to right, #c0392b, #8e44ad);
+            color: #fff;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 1.3rem;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 20;
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
+            font-family: "KaiTi", "STKaiti", serif;
+            flex-shrink: 0;
+            border-bottom: 1px solid #fff;
+        }
+
+        .pk-container {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        /* 玩家区域 */
+        .player-area {
+            flex: 1;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.9);
+            position: relative;
+            height: 100%;
+            transition: background 0.3s;
+        }
+
+        #p2-area {
+            border-right: 4px solid #333;
+            background: linear-gradient(to right, #e0eafc, #cfdef3);
+        }
+
+        #p1-area {
+            border-left: 4px solid #333;
+            background: linear-gradient(to left, #ffede0, #ffcfcf);
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            padding: 5px 10px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .player-name {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        #p1-area .player-name { color: #3498db; } /* 蓝方 */
+        #p2-area .player-name { color: #c0392b; } /* 红方 */
+
+        .player-stats {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #555;
+            text-align: right;
+        }
+        
+        .score-val { color: #d35400; font-size: 1.1rem; margin-left: 5px; font-weight: 900; }
+
+        /* 游戏棋盘 */
+        .game-board {
+            flex: 1;
+            display: grid;
+            gap: 6px;
+            padding: 2px;
+            overflow-y: auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            font-size: 1.0rem;
+            box-shadow: 0 2px 0px rgba(0,0,0,0.2);
+            border: 1px solid #999;
+            position: relative;
+            user-select: none;
+            min-height: 50px;
+            padding: 4px;
+            transition: transform 0.1s, background 0.2s;
+            word-break: break-word;
+            flex-direction: column;
+        }
+        
+        .card:active {
+            transform: translateY(2px);
+        }
+
+        /* 方程样式 */
+        .card.equation {
+            color: #4a0e0e; 
+            font-family: "KaiTi", "STKaiti", "BiauKai", serif;
+            font-size: 1.1rem;
+            background: #f4e6d4;
+            border-color: #c5a082;
+            line-height: 1.1;
+        }
+        
+        .card.equation b {
+            color: #c0392b;
+            font-size: 1.2rem;
+            border-bottom: 2px solid rgba(192, 57, 43, 0.3);
+        }
+
+        /* 解样式 */
+        .card.solution {
+            color: #1E4B7F;
+            font-weight: 600;
+            font-size: 1.0rem;
+            line-height: 1.1;
+            background: #f0f8ff;
+        }
+
+        .card.selected {
+            background: #f1c40f !important;
+            border-color: #d35400 !important;
+            color: black !important;
+            transform: scale(0.95);
+            box-shadow: inset 0 0 0 2px #d35400;
+        }
+        
+        .card.matched {
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.5s ease;
+            pointer-events: none;
+        }
+
+        /* 中心控制条 */
+        .center-controls {
+            width: 50px;
+            height: 100%;
+            background: #111;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            border-left: 1px solid #444;
+            border-right: 1px solid #444;
+        }
+
+        #main-action-btn {
+            padding: 20px 8px;
+            background: linear-gradient(to bottom, #e74c3c, #c0392b);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 0 10px #c0392b;
+            cursor: pointer;
+            writing-mode: vertical-lr;
+            text-orientation: upright;
+            letter-spacing: 4px;
+            white-space: nowrap;
+            height: 180px;
+            transition: all 0.2s;
+            text-shadow: 0 2px 2px rgba(0,0,0,0.3);
+        }
+        
+        #main-action-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 5px #c0392b;
+        }
+        
+        #main-action-btn:disabled {
+            background: #555;
+            box-shadow: none;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .sound-toggle {
+            margin-top: 20px;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+        .sound-toggle:hover { opacity: 1; color: #f1c40f; }
+
+        /* 重开按钮 */
+        #restart-btn {
+            margin-top: 20px;
+            padding: 15px 8px;
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 0 8px #3498db;
+            cursor: pointer;
+            writing-mode: vertical-lr;
+            text-orientation: upright;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            transition: all 0.2s;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+        }
+        
+        #restart-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 4px #3498db;
+        }
+
+        /* 结算遮罩 */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .winner-title {
+            font-size: 3.5rem;
+            color: #f1c40f;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(241, 196, 15, 0.8);
+            font-family: "KaiTi", serif;
+            font-weight: bold;
+            animation: pulse 0.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { transform: scale(1); text-shadow: 0 0 20px red; }
+            to { transform: scale(1.1); text-shadow: 0 0 40px gold; }
+        }
+
+        .score-board {
+            background: #fff;
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 450px;
+            box-shadow: 0 0 50px rgba(255,0,0,0.2);
+        }
+
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 1.2rem;
+        }
+        
+        .score-row.winner-row {
+            background-color: #2c3e50;
+            color: #f1c40f;
+            font-weight: bold;
+            padding: 10px;
+            margin: 0 -10px;
+            border-radius: 5px;
+        }
+
+        .close-btn {
+            margin-top: 25px;
+            padding: 12px 50px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+            cursor: pointer;
+        }
+
+        #countdown-overlay {
+            font-size: 12rem;
+            font-weight: 900;
+            color: #e74c3c;
+            font-family: Arial, sans-serif;
+            text-shadow: 4px 4px 0 #fff, 0 0 30px red;
+        }
+
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 99;
+        }
+
+        /* 配置页面样式 */
+        #config-overlay {
+            z-index: 101;
+            display: none;
+            padding: 20px;
+        }
+
+        .config-container {
+            background: #fff;
+            color: #333;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.2);
+        }
+
+        .config-title {
+            font-size: 1.8rem;
+            color: #c0392b;
+            margin-bottom: 25px;
+            text-align: center;
+            font-family: "KaiTi", serif;
+            font-weight: bold;
+        }
+
+        .config-section {
+            margin-bottom: 25px;
+        }
+
+        .config-section-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-weight: bold;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .equation-types {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .equation-type {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .equation-type input {
+            width: 18px;
+            height: 18px;
+            accent-color: #c0392b;
+        }
+
+        .equation-type label {
+            cursor: pointer;
+            font-size: 1.05rem;
+        }
+
+        .board-sizes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .board-size {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px 0;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .board-size.selected {
+            border-color: #c0392b;
+            background-color: #f8e8e8;
+            color: #c0392b;
+        }
+
+        /* 游戏规则样式 */
+        .game-rules {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .game-rules-title {
+            font-size: 1.2rem;
+            color: #c0392b;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .game-rules-list {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .config-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .config-btn {
+            padding: 12px 35px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .config-btn.confirm {
+            background: #27ae60;
+            color: white;
+            box-shadow: 0 3px 10px rgba(39, 174, 96, 0.4);
+        }
+
+        .config-btn.cancel {
+            background: #95a5a6;
+            color: white;
+            box-shadow: 0 3px 10px rgba(149, 165, 166, 0.4);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-header">数学大革命 - 2.0</div>
+
+    <div class="pk-container">
+        <div id="p2-area" class="player-area">
+            <div class="player-header">
+                <div class="player-name">🔴 红方 (P2)</div>
+                <div class="player-stats">
+                    <div>得分 <span class="score-val" id="p2-score">0</span></div>
+                    <div style="font-size: 0.8rem; color:#999">错误 <span id="p2-errors">0</span></div>
+                </div>
+            </div>
+            <div class="game-board" id="p2-board"></div>
+        </div>
+
+        <div class="center-controls">
+            <button id="main-action-btn">开始游戏</button>
+            <div class="sound-toggle" id="sound-btn" title="音乐开关">🔊</div>
+            <button id="restart-btn">重新配置</button>
+        </div>
+
+        <div id="p1-area" class="player-area">
+            <div class="player-header">
+                <div class="player-name">🔵 蓝方 (P1)</div>
+                <div class="player-stats">
+                    <div>得分 <span class="score-val" id="p1-score">0</span></div>
+                    <div style="font-size: 0.8rem; color:#999">错误 <span id="p1-errors">0</span></div>
+                </div>
+            </div>
+            <div class="game-board" id="p1-board"></div>
+        </div>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="overlay" id="result-overlay">
+        <div class="winner-title" id="winner-title">蓝方获胜!</div>
+        <div id="winner-desc" style="color:#ccc; margin-bottom:20px; font-size:1.2rem;"></div>
+        
+        <div class="score-board">
+            <div class="score-row" id="p1-result-row">
+                <span>🔵 蓝方</span>
+                <span id="p1-final-score">0</span>
+            </div>
+            <div class="score-row" id="p2-result-row">
+                <span>🔴 红方</span>
+                <span id="p2-final-score">0</span>
+            </div>
+            <div style="margin-top:15px; font-size:0.85rem; color:#7f8c8d; text-align:center; padding-top:10px; border-top:1px dashed #ddd;">
+                规则: 匹配+10 | 错误-2 | 完赛+30<br>
+                <span style="color:#e74c3c">农村包围城市，武装夺取政权！</span>
+            </div>
+        </div>
+        <button class="close-btn" id="restart-game-btn">再玩一局</button>
+    </div>
+
+    <!-- 配置页面 -->
+    <div class="overlay" id="config-overlay">
+        <div class="config-container">
+            <div class="config-title">游戏配置</div>
+            
+            <div class="config-section">
+                <div class="config-section-title">选择方程类型</div>
+                <div class="equation-types">
+                    <div class="equation-type">
+                        <input type="checkbox" id="type-exponential">
+                        <label for="type-exponential">指数方程</label>
+                    </div>
+                    <div class="equation-type">
+                        <input type="checkbox" id="type-radical">
+                        <label for="type-radical">根式方程</label>
+                    </div>
+                    <div class="equation-type">
+                        <input type="checkbox" id="type-fractional" checked>
+                        <label for="type-fractional">分式方程</label>
+                    </div>
+                    <div class="equation-type">
+                        <input type="checkbox" id="type-quadratic" checked>
+                        <label for="type-quadratic">一元二次方程</label>
+                    </div>
+                    <div class="equation-type">
+                        <input type="checkbox" id="type-cubic">
+                        <label for="type-cubic">一元三次方程</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="config-section">
+                <div class="config-section-title">选择棋盘尺寸（列×行）</div>
+                <div class="board-sizes">
+                    <div class="board-size" data-size="2x8">2×8</div>
+                    <div class="board-size" data-size="3x8">3×8</div>
+                    <div class="board-size selected" data-size="4x8">4×8</div>
+                    <div class="board-size" data-size="5x8">5×8</div>
+                </div>
+            </div>
+            
+            <!-- 游戏规则区域 -->
+            <div class="game-rules">
+                <div class="game-rules-title">游戏规则</div>
+                <div class="game-rules-list">
+                    1. 游戏分为蓝方和红方两个阵营，双方比拼方程匹配速度；<br>
+                    2. 点击方程卡片和对应的解卡片完成匹配，相同类型卡片无法匹配；<br>
+                    3. 匹配正确得10分，匹配错误扣2分；<br>
+                    4. 率先完成所有匹配的玩家额外获得30分奖励；<br>
+                    5. 游戏默认支持分式方程、一元二次方程的匹配，可自行勾选其他类型；<br>
+                    6. 可自由选择棋盘尺寸（2×8/3×8/4×8/5×8），如3×8表示8行3列，尺寸越大难度越高；<br>
+                    7. 游戏过程中可随时点击"重新配置"按钮重新设置游戏参数；<br>
+                    8. <strong style="color:#c0392b">号外1</strong>：豪玩；<br>
+                    9. <strong style="color:#c0392b">号外2</strong>：豪玩；
+                </div>
+            </div>
+            
+            <div class="config-actions">
+                <button class="config-btn cancel" id="cancel-config">取消</button>
+                <button class="config-btn confirm" id="confirm-config">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="countdown-overlay" style="background:rgba(0,0,0,0.8);">3</div>
+
+    <script>
+        // === 核心配置管理 ===
+        const ConfigManager = {
+            selectedTypes: {
+                exponential: false,  // 默认取消
+                radical: false,      // 默认取消
+                fractional: true,    // 默认勾选
+                quadratic: true,     // 默认勾选
+                cubic: false         // 默认取消
+            },
+            boardSize: "4x8",    // 格式：列数x行数 3x8=3列8行
+            boardCols: 4,        // 列数
+            boardRows: 8,        // 行数
+            
+            init() {
+                // 绑定棋盘尺寸选择
+                document.querySelectorAll('.board-size').forEach(el => {
+                    el.addEventListener('click', () => {
+                        document.querySelectorAll('.board-size').forEach(e => e.classList.remove('selected'));
+                        el.classList.add('selected');
+                        this.boardSize = el.dataset.size;
+                        const [cols, rows] = this.boardSize.split('x').map(Number);
+                        this.boardCols = cols;
+                        this.boardRows = rows;
+                    });
+                });
+                
+                // 绑定方程类型选择
+                const typeIds = ['exponential', 'radical', 'fractional', 'quadratic', 'cubic'];
+                typeIds.forEach(type => {
+                    document.getElementById(`type-${type}`).addEventListener('change', (e) => {
+                        this.selectedTypes[type] = e.target.checked;
+                    });
+                });
+                
+                // 配置页面按钮事件
+                document.getElementById('restart-btn').addEventListener('click', () => {
+                    this.showConfig();
+                });
+                
+                document.getElementById('cancel-config').addEventListener('click', () => {
+                    this.hideConfig();
+                });
+                
+                document.getElementById('confirm-config').addEventListener('click', () => {
+                    this.saveConfig();
+                    this.hideConfig();
+                    GameController.startCountdown();
+                });
+
+                // 初始化默认显示配置界面
+                setTimeout(() => {
+                    this.showConfig();
+                }, 300);
+            },
+            
+            showConfig() {
+                // 停止当前游戏（无论是否进行中）
+                GameController.stopGame();
+                
+                // 恢复当前配置到UI
+                const typeIds = ['exponential', 'radical', 'fractional', 'quadratic', 'cubic'];
+                typeIds.forEach(type => {
+                    document.getElementById(`type-${type}`).checked = this.selectedTypes[type];
+                });
+                
+                document.querySelectorAll('.board-size').forEach(el => {
+                    el.classList.toggle('selected', el.dataset.size === this.boardSize);
+                });
+                
+                document.getElementById('config-overlay').style.display = 'flex';
+            },
+            
+            hideConfig() {
+                document.getElementById('config-overlay').style.display = 'none';
+            },
+            
+            saveConfig() {
+                // 保存方程类型
+                const typeIds = ['exponential', 'radical', 'fractional', 'quadratic', 'cubic'];
+                let hasSelected = false;
+                
+                typeIds.forEach(type => {
+                    this.selectedTypes[type] = document.getElementById(`type-${type}`).checked;
+                    if (this.selectedTypes[type]) hasSelected = true;
+                });
+                
+                // 确保至少选择一种（默认选分式方程）
+                if (!hasSelected) {
+                    this.selectedTypes.fractional = true;
+                    document.getElementById('type-fractional').checked = true;
+                }
+                
+                // 保存棋盘尺寸（列数x行数）
+                const selectedSize = document.querySelector('.board-size.selected');
+                if (selectedSize) {
+                    this.boardSize = selectedSize.dataset.size;
+                    const [cols, rows] = this.boardSize.split('x').map(Number);
+                    this.boardCols = cols;
+                    this.boardRows = rows;
+                }
+                
+                // 更新游戏控制器
+                GameController.updateBoardDimensions(this.boardCols, this.boardRows);
+            },
+            
+            getSelectedTypes() {
+                const types = [];
+                if (this.selectedTypes.exponential) types.push('exponential');
+                if (this.selectedTypes.radical) types.push('radical');
+                if (this.selectedTypes.fractional) types.push('fractional');
+                if (this.selectedTypes.quadratic) types.push('quadratic');
+                if (this.selectedTypes.cubic) types.push('cubic');
+                return types;
+            }
+        };
+
+        // === 方程生成器（严格杜绝重复方程，1x简化为x） ===
+        const EquationGenerator = {
+            // 生成随机整数
+            randomInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            },
+            
+            // 记录已生成的方程，避免重复（存储简化后的方程）
+            generatedEquations: new Set(),
+            
+            // 重置已生成方程记录
+            resetGeneratedEquations() {
+                this.generatedEquations.clear();
+            },
+            
+            // 格式化系数：1x -> x，1x² -> x²
+            formatCoefficient(coeff) {
+                return coeff === 1 ? '' : coeff.toString();
+            },
+            
+            // 生成指数方程（解为整数，默认不勾选）
+            generateExponentialEquation(targetSolution = null) {
+                let equation, solution, solutionKey;
+                let attempts = 0;
+                
+                // 最多尝试20次生成不重复的方程
+                while (attempts < 20) {
+                    const base = this.randomInt(2, 4); // 底数2-4
+                    const xVal = targetSolution ? 
+                        (typeof targetSolution === 'number' ? targetSolution : parseInt(targetSolution.replace(/x = /, ''))) : 
+                        this.randomInt(1, 5); // x值1-5
+                    const offset = this.randomInt(0, 3); // 偏移量0-3
+                    const result = Math.pow(base, xVal + offset);
+                    
+                    // 避免恒等式，格式化系数
+                    const coeffStr = this.formatCoefficient(1); // 指数方程x系数固定为1
+                    equation = offset > 0 ? `${base}^(${coeffStr}x+${offset}) = ${result}` : `${base}^${coeffStr}x = ${result}`;
+                    solution = `x = ${xVal}`;
+                    solutionKey = solution;
+                    
+                    // 检查方程是否重复（存储简化后的方程）
+                    if (!this.generatedEquations.has(equation)) {
+                        this.generatedEquations.add(equation);
+                        break;
+                    }
+                    attempts++;
+                }
+                
+                // 如果尝试多次仍重复，使用更大的底数范围
+                if (attempts >= 20) {
+                    const base = this.randomInt(5, 7);
+                    const xVal = this.randomInt(1, 6);
+                    const result = Math.pow(base, xVal);
+                    const coeffStr = this.formatCoefficient(1);
+                    equation = `${base}^${coeffStr}x = ${result}`;
+                    solution = `x = ${xVal}`;
+                    solutionKey = solution;
+                    this.generatedEquations.add(equation);
+                }
+                
+                return { equation, solution, solutionKey };
+            },
+            
+            // 生成根式方程（解为整数，默认不勾选）
+            generateRadicalEquation(targetSolution = null) {
+                let equation, solution, solutionKey;
+                let attempts = 0;
+                
+                while (attempts < 20) {
+                    const root = this.randomInt(2, 3); // 2或3次方根
+                    const coeff = this.randomInt(1, 3); // 系数1-3
+                    const constVal = this.randomInt(1, 5); // 常数1-5
+                    
+                    const xVal = targetSolution ? 
+                        (typeof targetSolution === 'number' ? targetSolution : parseInt(targetSolution.replace(/x = /, ''))) : 
+                        this.randomInt(1, 5); // x值1-5
+                    
+                    const coeffStr = this.formatCoefficient(coeff);
+                    const insideVal = coeff * xVal + constVal;
+                    const result = Math.pow(insideVal, 1/root);
+                    
+                    // 确保结果为整数，避免恒等式
+                    const intResult = Math.round(result);
+                    const adjustedInside = Math.pow(intResult, root);
+                    const adjustedX = (adjustedInside - constVal) / coeff;
+                    
+                    equation = `${root === 2 ? '√' : '∛'}(${coeffStr}x+${constVal}) = ${intResult}`;
+                    solution = `x = ${Number.isInteger(adjustedX) ? adjustedX : adjustedX.toFixed(1)}`;
+                    solutionKey = solution;
+                    
+                    if (!this.generatedEquations.has(equation)) {
+                        this.generatedEquations.add(equation);
+                        break;
+                    }
+                    attempts++;
+                }
+                
+                if (attempts >= 20) {
+                    const root = 2;
+                    const coeff = this.randomInt(2, 4);
+                    const constVal = this.randomInt(6, 9);
+                    const xVal = this.randomInt(1, 5);
+                    const coeffStr = this.formatCoefficient(coeff);
+                    const insideVal = coeff * xVal + constVal;
+                    const intResult = Math.sqrt(insideVal);
+                    equation = `√(${coeffStr}x+${constVal}) = ${Math.round(intResult)}`;
+                    solution = `x = ${xVal}`;
+                    solutionKey = solution;
+                    this.generatedEquations.add(equation);
+                }
+                
+                return { equation, solution, solutionKey };
+            },
+            
+            // 生成分式方程（严格杜绝重复，1x简化为x）
+            generateFractionalEquation(targetSolution = null) {
+                // 预设简易分数解
+                const solutions = [
+                    { val: 1, str: 'x = 1' },
+                    { val: 2, str: 'x = 2' },
+                    { val: 3, str: 'x = 3' },
+                    { val: 4, str: 'x = 4' },
+                    { val: 1/2, str: 'x = 1/2' },
+                    { val: 1/3, str: 'x = 1/3' },
+                    { val: 2/3, str: 'x = 2/3' },
+                    { val: 3/2, str: 'x = 3/2' },
+                    { val: 5/2, str: 'x = 5/2' },
+                    { val: 4/3, str: 'x = 4/3' } // 增加解的多样性
+                ];
+                
+                let equation, solution, solutionKey;
+                let attempts = 0;
+                
+                // 最多尝试20次生成不重复的方程
+                while (attempts < 20) {
+                    // 如果指定了目标解，使用该解；否则随机选择
+                    let sol;
+                    if (targetSolution) {
+                        sol = solutions.find(s => s.str === targetSolution) || solutions[this.randomInt(0, solutions.length - 1)];
+                    } else {
+                        sol = solutions[this.randomInt(0, solutions.length - 1)];
+                    }
+                    
+                    const xVal = sol.val;
+                    const xStr = sol.str;
+
+                    // 构造单项式分式方程，确保不是恒等式
+                    const a = this.randomInt(1, 8); // 系数1-8（包含1，用于测试简化）
+                    const b = this.randomInt(2, 9); // 常数2-9
+                    
+                    // 格式化系数：1x -> x
+                    const coeffStr = this.formatCoefficient(a);
+                    
+                    // 单项式形式：(a x) / b = 结果
+                    const numerator = a * xVal;
+                    const result = numerator / b;
+                    
+                    // 结果转为简易分数显示
+                    let resStr = '';
+                    if (Number.isInteger(result)) {
+                        resStr = `${result}`;
+                    } else if (result === 1/2) {
+                        resStr = '1/2';
+                    } else if (result === 1/3) {
+                        resStr = '1/3';
+                    } else if (result === 2/3) {
+                        resStr = '2/3';
+                    } else if (result === 3/2) {
+                        resStr = '3/2';
+                    } else if (result === 1/4) {
+                        resStr = '1/4';
+                    } else if (result === 5/2) {
+                        resStr = '5/2';
+                    } else if (result === 4/3) {
+                        resStr = '4/3';
+                    } else {
+                        resStr = `${Math.round(result * 10) / 10}`;
+                    }
+
+                    // 生成方程（单项式，避免恒等式）
+                    equation = `${coeffStr}x/${b} = ${resStr}`;
+                    
+                    // 检查是否为恒等式，是则跳过
+                    if (equation.replace(/x/g, '0') === `${0}/${b} = ${resStr}` && resStr === '0') {
+                        attempts++;
+                        continue;
+                    }
+                    
+                    // 检查方程是否重复（存储简化后的方程）
+                    if (!this.generatedEquations.has(equation)) {
+                        this.generatedEquations.add(equation);
+                        solution = xStr;
+                        solutionKey = xStr;
+                        break;
+                    }
+                    attempts++;
+                }
+                
+                // 如果尝试多次仍重复，使用更大的系数范围和更多变体
+                if (attempts >= 20) {
+                    const sol = solutions[this.randomInt(0, solutions.length - 1)];
+                    const xVal = sol.val;
+                    const a = this.randomInt(9, 15); // 更大的系数范围
+                    const b = this.randomInt(10, 20);
+                    const coeffStr = this.formatCoefficient(a);
+                    const numerator = a * xVal;
+                    const result = numerator / b;
+                    let resStr = Number.isInteger(result) ? `${result}` : `${Math.round(result * 10) / 10}`;
+                    equation = `${coeffStr}x/${b} = ${resStr}`;
+                    solution = sol.str;
+                    solutionKey = sol.str;
+                    this.generatedEquations.add(equation);
+                }
+                
+                return { equation, solution, solutionKey };
+            },
+            
+            // 生成一元二次方程（严格杜绝重复，1x²简化为x²）
+            generateQuadraticEquation(targetSolution = null) {
+                // 预设解集合
+                const solutions = [
+                    { val: 2, str: 'x = 2 或 x = -2' },
+                    { val: 3, str: 'x = 3 或 x = -3' },
+                    { val: 4, str: 'x = 4 或 x = -4' },
+                    { val: 5, str: 'x = 5 或 x = -5' }, // 增加解的多样性
+                    { val: 1, str: 'x = 1 或 x = -1' }
+                ];
+                
+                let equation, solution, solutionKey;
+                let attempts = 0;
+                
+                while (attempts < 20) {
+                    // 如果指定了目标解，使用该解；否则随机选择
+                    let sol;
+                    if (targetSolution) {
+                        sol = solutions.find(s => s.str === targetSolution) || solutions[this.randomInt(0, solutions.length - 1)];
+                    } else {
+                        sol = solutions[this.randomInt(0, solutions.length - 1)];
+                    }
+                    
+                    const root = sol.val;
+
+                    // 单项式形式：a x² = b（确保不是恒等式）
+                    const a = this.randomInt(1, 7); // 系数1-7（包含1，用于测试简化）
+                    const b = a * root * root; // 结果
+                    
+                    // 格式化系数：1x² -> x²
+                    const coeffStr = this.formatCoefficient(a);
+                    
+                    // 避免恒等式（如0x²=0）
+                    if (a === 0 || b === 0) {
+                        attempts++;
+                        continue;
+                    }
+                    
+                    equation = `${coeffStr}x² = ${b}`;
+                    
+                    // 检查方程是否重复（存储简化后的方程）
+                    if (!this.generatedEquations.has(equation)) {
+                        this.generatedEquations.add(equation);
+                        solution = sol.str;
+                        solutionKey = sol.str;
+                        break;
+                    }
+                    attempts++;
+                }
+                
+                // 如果尝试多次仍重复，使用更大的系数和更多变体
+                if (attempts >= 20) {
+                    const sol = solutions[this.randomInt(0, solutions.length - 1)];
+                    const root = sol.val;
+                    const a = this.randomInt(8, 14); // 更大的系数范围
+                    const b = a * root * root;
+                    const coeffStr = this.formatCoefficient(a);
+                    equation = `${coeffStr}x² = ${b}`;
+                    solution = sol.str;
+                    solutionKey = sol.str;
+                    this.generatedEquations.add(equation);
+                }
+                
+                return { equation, solution, solutionKey };
+            },
+            
+            // 生成一元三次方程（解为整数，默认不勾选）
+            generateCubicEquation() {
+                let equation, solution, solutionKey;
+                let attempts = 0;
+                
+                while (attempts < 20) {
+                    // 简化形式，确保根为整数，单项式为主
+                    const r1 = this.randomInt(2, 5); // 实根
+                    const a = this.randomInt(1, 4); // 系数1-4
+                    
+                    // 格式化系数：1x³ -> x³
+                    const coeffStr = this.formatCoefficient(a);
+                    
+                    equation = `${coeffStr}x³ = ${a * r1 * r1 * r1}`;
+                    
+                    if (!this.generatedEquations.has(equation)) {
+                        this.generatedEquations.add(equation);
+                        solution = `x = ${r1}`;
+                        solutionKey = solution;
+                        break;
+                    }
+                    attempts++;
+                }
+                
+                if (attempts >= 20) {
+                    const r1 = this.randomInt(6, 8);
+                    const a = this.randomInt(5, 7);
+                    const coeffStr = this.formatCoefficient(a);
+                    equation = `${coeffStr}x³ = ${a * r1 * r1 * r1}`;
+                    solution = `x = ${r1}`;
+                    solutionKey = solution;
+                    this.generatedEquations.add(equation);
+                }
+                
+                return { equation, solution, solutionKey };
+            },
+            
+            // 生成1:1的方程-解对（严格杜绝重复方程）
+            generateEquationPairs(types, count) {
+                if (!types || types.length === 0) types = ['fractional'];
+                
+                // 重置已生成方程记录（关键：每次生成新游戏都清空）
+                this.resetGeneratedEquations();
+                
+                const equationPairs = [];
+                const solutionPool = [];
+                
+                // 第一步：生成更大的基础解池（确保解的多样性）
+                const solCount = Math.min(Math.ceil(count / 2), 10); // 最多10种不同解
+                for (let i = 0; i < solCount; i++) {
+                    const type = types[this.randomInt(0, types.length - 1)];
+                    let solKey = '';
+                    
+                    switch (type) {
+                        case 'fractional':
+                            solKey = this.generateFractionalEquation().solutionKey;
+                            break;
+                        case 'quadratic':
+                            solKey = this.generateQuadraticEquation().solutionKey;
+                            break;
+                        case 'exponential':
+                            solKey = this.generateExponentialEquation().solutionKey;
+                            break;
+                        case 'radical':
+                            solKey = this.generateRadicalEquation().solutionKey;
+                            break;
+                        case 'cubic':
+                            solKey = this.generateCubicEquation().solutionKey;
+                            break;
+                    }
+                    solutionPool.push(solKey);
+                }
+                
+                // 第二步：为每个位置生成唯一方程，解从解池中选取（可重复）
+                // 确保生成count个完全唯一的方程
+                while (equationPairs.length < count) {
+                    const targetSol = solutionPool[equationPairs.length % solutionPool.length];
+                    const type = types[this.randomInt(0, types.length - 1)];
+                    
+                    let pair;
+                    switch (type) {
+                        case 'fractional':
+                            pair = this.generateFractionalEquation(targetSol);
+                            break;
+                        case 'quadratic':
+                            pair = this.generateQuadraticEquation(targetSol);
+                            break;
+                        case 'exponential':
+                            pair = this.generateExponentialEquation(targetSol);
+                            break;
+                        case 'radical':
+                            pair = this.generateRadicalEquation(targetSol);
+                            break;
+                        case 'cubic':
+                            pair = this.generateCubicEquation();
+                            break;
+                        default:
+                            pair = this.generateFractionalEquation(targetSol);
+                    }
+                    
+                    // 双重检查：确保方程未被添加过
+                    const isDuplicate = equationPairs.some(p => p.equation === pair.equation);
+                    if (!isDuplicate) {
+                        equationPairs.push(pair);
+                    }
+                }
+                
+                return equationPairs;
+            }
+        };
+
+        // === 音效管理器 ===
+        const SoundManager = {
+            ctx: null,
+            bgmInterval: null,
+            isMuted: false,
+            tempo: 180,
+
+            init() {
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                } catch (e) {
+                    console.warn('音频上下文初始化失败:', e);
+                    this.isMuted = true;
+                }
+            },
+
+            playMatch() {
+                if (this.isMuted || !this.ctx) return;
+                const t = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(880, t);
+                osc.frequency.exponentialRampToValueAtTime(1760, t + 0.1);
+                
+                gain.gain.setValueAtTime(0.1, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(t);
+                osc.stop(t + 0.2);
+            },
+
+            playError() {
+                if (this.isMuted || !this.ctx) return;
+                const t = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, t);
+                osc.frequency.linearRampToValueAtTime(50, t + 0.3);
+                
+                gain.gain.setValueAtTime(0.3, t);
+                gain.gain.linearRampToValueAtTime(0.01, t + 0.3);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(t);
+                osc.stop(t + 0.3);
+            },
+
+            playWin() {
+                if (this.isMuted || !this.ctx) return;
+                const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+                let t = this.ctx.currentTime;
+                
+                notes.forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.2, t);
+                    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(t);
+                    osc.stop(t + 0.3);
+                    t += 0.08;
+                });
+            },
+
+            startBGM() {
+                if (this.isMuted || !this.ctx || this.bgmInterval) return;
+                
+                let beat = 0;
+                this.bgmInterval = setInterval(() => {
+                    if(this.isMuted) return;
+                    const t = this.ctx.currentTime;
+                    
+                    const bassOsc = this.ctx.createOscillator();
+                    const bassGain = this.ctx.createGain();
+                    bassOsc.type = 'sawtooth';
+                    const bassNotes = [87.31, 98.00, 110.00, 82.41]; 
+                    bassOsc.frequency.setValueAtTime(bassNotes[Math.floor(beat/4) % 4], t);
+                    
+                    bassGain.gain.setValueAtTime(0.1, t);
+                    bassGain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+                    
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 400;
+
+                    bassOsc.connect(filter);
+                    filter.connect(bassGain);
+                    bassGain.connect(this.ctx.destination);
+                    bassOsc.start(t);
+                    bassOsc.stop(t + 0.15);
+
+                    if (beat % 2 === 0) {
+                        const hiOsc = this.ctx.createOscillator();
+                        const hiGain = this.ctx.createGain();
+                        hiOsc.type = 'square';
+                        hiOsc.frequency.setValueAtTime(beat % 8 === 0 ? 880 : 440, t);
+                        hiGain.gain.setValueAtTime(0.03, t);
+                        hiGain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+                        hiOsc.connect(hiGain);
+                        hiGain.connect(this.ctx.destination);
+                        hiOsc.start(t);
+                        hiOsc.stop(t + 0.05);
+                    }
+                    
+                    beat++;
+                }, 60000/this.tempo);
+            },
+
+            stopBGM() {
+                if (this.bgmInterval) {
+                    clearInterval(this.bgmInterval);
+                    this.bgmInterval = null;
+                }
+            },
+
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+                document.getElementById('sound-btn').textContent = this.isMuted ? '🔇' : '🔊';
+                
+                if (this.isMuted) {
+                    this.stopBGM();
+                } else if (GameController.isPlaying) {
+                    this.startBGM();
+                }
+                return this.isMuted;
+            }
+        };
+
+        // === 彩带效果 ===
+        const Confetti = {
+            canvas: document.getElementById('confetti-canvas'),
+            ctx: document.getElementById('confetti-canvas').getContext('2d'),
+            particles: [],
+            animationId: null,
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            },
+
+            start() {
+                this.resize();
+                this.particles = [];
+                const colors = ['#f1c40f', '#e74c3c', '#3498db', '#9b59b6', '#ecf0f1'];
+                
+                for (let i = 0; i < 200; i++) { 
+                    this.particles.push({
+                        x: window.innerWidth / 2,
+                        y: window.innerHeight / 2,
+                        vx: (Math.random() - 0.5) * 25, 
+                        vy: (Math.random() - 0.5) * 25,
+                        size: Math.random() * 8 + 4,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        rotation: Math.random() * 360,
+                        dRotation: (Math.random() - 0.5) * 15
+                    });
+                }
+                this.animate();
+            },
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.particles.forEach((p, index) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.3; 
+                    p.rotation += p.dRotation;
+                    p.vx *= 0.96; 
+                    p.vy *= 0.96; 
+
+                    this.ctx.save();
+                    this.ctx.translate(p.x, p.y);
+                    this.ctx.rotate(p.rotation * Math.PI / 180);
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                    this.ctx.restore();
+
+                    if (p.y > this.canvas.height || p.x < 0 || p.x > this.canvas.width) {
+                        this.particles.splice(index, 1);
+                    }
+                });
+
+                if (this.particles.length > 0) {
+                    this.animationId = requestAnimationFrame(() => this.animate());
+                } else {
+                    this.animationId = null;
+                }
+            },
+
+            stop() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.particles = [];
+            }
+        };
+
+        // === 游戏控制器 ===
+        const GameController = {
+            isPlaying: false,
+            p1: null,
+            p2: null,
+            pairsCount: 12, // 3x8=24/2=12对
+            boardCols: 3,   // 列数
+            boardRows: 8,   // 行数
+
+            init() {
+                // 初始化音效
+                SoundManager.init();
+                
+                // 初始化配置
+                ConfigManager.init();
+                
+                // 创建游戏实例
+                this.p1 = new GameInstance('p1', 'p1-board', 'p1-score', 'p1-errors'); // 蓝方
+                this.p2 = new GameInstance('p2', 'p2-board', 'p2-score', 'p2-errors'); // 红方
+                
+                // 绑定开始按钮
+                document.getElementById('main-action-btn').addEventListener('click', () => {
+                    this.startCountdown();
+                });
+
+                // 绑定音效开关
+                document.getElementById('sound-btn').addEventListener('click', () => {
+                    SoundManager.toggleMute();
+                });
+
+                // 绑定再来一局按钮
+                document.getElementById('restart-game-btn').addEventListener('click', () => {
+                    document.getElementById('result-overlay').style.display = 'none';
+                    Confetti.stop();
+                    this.startCountdown();
+                });
+                
+                // 初始化棋盘尺寸
+                this.updateBoardDimensions(ConfigManager.boardCols, ConfigManager.boardRows);
+            },
+
+            // 停止当前游戏（用于局内重开）
+            stopGame() {
+                this.isPlaying = false;
+                
+                // 停止背景音乐
+                SoundManager.stopBGM();
+                
+                // 停止彩带效果
+                Confetti.stop();
+                
+                // 禁用玩家操作
+                if (this.p1) this.p1.disable();
+                if (this.p2) this.p2.disable();
+                
+                // 重置UI状态
+                const btn = document.getElementById('main-action-btn');
+                btn.textContent = "开始游戏";
+                btn.disabled = false;
+                
+                // 隐藏所有弹窗
+                document.getElementById('countdown-overlay').style.display = 'none';
+                document.getElementById('result-overlay').style.display = 'none';
+                
+                // 清空棋盘（提升体验）
+                if (this.p1) this.p1.board.innerHTML = '';
+                if (this.p2) this.p2.board.innerHTML = '';
+            },
+
+            updateBoardDimensions(cols, rows) {
+                this.boardCols = cols;
+                this.boardRows = rows;
+                this.pairsCount = Math.floor((cols * rows) / 2); // 总卡片数/2 = 对数
+            },
+
+            startCountdown() {
+                if (this.isPlaying) return;
+                
+                SoundManager.stopBGM();
+                
+                const overlay = document.getElementById('countdown-overlay');
+                overlay.style.display = 'flex';
+                let count = 3;
+                overlay.textContent = count;
+
+                const timer = setInterval(() => {
+                    count--;
+                    if (count > 0) {
+                        overlay.textContent = count;
+                    } else if (count === 0) {
+                        overlay.textContent = "开始!";
+                        SoundManager.playMatch(); 
+                    } else {
+                        clearInterval(timer);
+                        overlay.style.display = 'none';
+                        this.startGame();
+                    }
+                }, 800);
+            },
+
+            startGame() {
+                this.isPlaying = true;
+                SoundManager.startBGM(); 
+
+                const btn = document.getElementById('main-action-btn');
+                btn.textContent = "游戏中";
+                btn.disabled = true;
+
+                // 生成1:1的方程-解对（严格杜绝重复方程）
+                const selectedTypes = ConfigManager.getSelectedTypes();
+                const equationPairs = EquationGenerator.generateEquationPairs(selectedTypes, this.pairsCount);
+                
+                // 启动两个玩家的游戏
+                this.p1.start(equationPairs, this.boardRows, this.boardCols);
+                this.p2.start(equationPairs, this.boardRows, this.boardCols);
+            },
+
+            checkGameEnd(finisherId) {
+                if (!this.isPlaying) return;
+                this.isPlaying = false;
+                
+                SoundManager.stopBGM();
+                SoundManager.playWin(); 
+                Confetti.start(); 
+
+                this.p1.disable();
+                this.p2.disable();
+
+                // 计算最终得分
+                let score1 = this.p1.score - (this.p1.errorCount * 2);
+                let score2 = this.p2.score - (this.p2.errorCount * 2);
+
+                // 完赛奖励
+                if (finisherId === 'p1') score1 += 30; // 蓝方
+                if (finisherId === 'p2') score2 += 30; // 红方
+
+                this.showResult(score1, score2, finisherId);
+            },
+
+            showResult(s1, s2, finisherId) {
+                const overlay = document.getElementById('result-overlay');
+                const title = document.getElementById('winner-title');
+                const desc = document.getElementById('winner-desc');
+                const p1Row = document.getElementById('p1-result-row');
+                const p2Row = document.getElementById('p2-result-row');
+
+                // 重置开始按钮
+                const btn = document.getElementById('main-action-btn');
+                btn.textContent = "开始游戏";
+                btn.disabled = false;
+
+                // 更新分数显示
+                document.getElementById('p1-final-score').textContent = s1;
+                document.getElementById('p2-final-score').textContent = s2;
+
+                // 清除之前的获胜标记
+                p1Row.classList.remove('winner-row');
+                p2Row.classList.remove('winner-row');
+
+                // 判定胜负
+                let winText = "";
+                if (s1 > s2) {
+                    winText = "🔵 蓝方获胜!";
+                    p1Row.classList.add('winner-row');
+                } else if (s2 > s1) {
+                    winText = "🔴 红方获胜!";
+                    p2Row.classList.add('winner-row');
+                } else {
+                    winText = "🤝 平局!";
+                }
+                
+                title.textContent = winText;
+                desc.textContent = `率先完成: ${finisherId === 'p1' ? '蓝方' : '红方'}`;
+                
+                // 显示结果
+                overlay.style.display = 'flex';
+            }
+        };
+
+        // === 游戏实例类（1:1配对，无重复方程） ===
+        class GameInstance {
+            constructor(id, boardId, scoreId, errorId) {
+                this.id = id;
+                this.board = document.getElementById(boardId);
+                this.scoreEl = document.getElementById(scoreId);
+                this.errorEl = document.getElementById(errorId);
+                this.score = 0;
+                this.errorCount = 0;
+                this.matchedPairs = 0;
+                this.totalPairs = 0;
+                this.selectedCard = null;
+                this.canSelect = false;
+                this.cardsData = [];
+            }
+
+            start(pairsData, rows, cols) {
+                // 重置状态
+                this.score = 0;
+                this.errorCount = 0;
+                this.matchedPairs = 0;
+                this.totalPairs = pairsData.length;
+                this.selectedCard = null;
+                this.canSelect = true;
+                this.cardsData = [];
+                
+                // 更新显示
+                this.updateDisplay();
+                
+                // 生成棋盘（1:1的方程和解卡片，无重复方程）
+                this.generateBoard(pairsData, rows, cols);
+            }
+
+            updateDisplay() {
+                this.scoreEl.textContent = this.score;
+                this.errorEl.textContent = this.errorCount;
+            }
+
+            generateBoard(pairs, rows, cols) {
+                // 清空棋盘
+                this.board.innerHTML = '';
+                
+                // 设置网格布局（cols列，rows行） 3×8=3列8行
+                this.board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+                this.board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+                
+                // 生成1:1的方程和解卡片
+                let allCards = [];
+                
+                // 首先添加所有方程卡片（确保无重复）
+                pairs.forEach((pair, index) => {
+                    allCards.push({ 
+                        id: `eq_${index}`,
+                        text: pair.equation, 
+                        type: 'equation', 
+                        solutionKey: pair.solutionKey,
+                        isMatched: false
+                    });
+                });
+                
+                // 然后添加对应的解卡片（1:1，解可重复）
+                pairs.forEach((pair, index) => {
+                    allCards.push({
+                        id: `sol_${index}`,
+                        text: pair.solution,
+                        type: 'solution',
+                        solutionKey: pair.solutionKey,
+                        isMatched: false
+                    });
+                });
+                
+                // 打乱所有卡片
+                allCards = allCards.sort(() => Math.random() - 0.5);
+                this.cardsData = allCards;
+
+                // 创建卡片元素
+                allCards.forEach((cardData, index) => {
+                    const el = document.createElement('div');
+                    el.className = `card ${cardData.type}`;
+                    el.dataset.index = index;
+                    el.textContent = cardData.text;
+                    
+                    // 根据文本长度调整字体大小
+                    const textLength = cardData.text.length;
+                    if (textLength > 15) {
+                        el.style.fontSize = '0.8rem';
+                    } else if (textLength > 10) {
+                        el.style.fontSize = '0.9rem';
+                    }
+                    
+                    // 绑定点击事件
+                    el.addEventListener('click', () => this.handleCardClick(el, index));
+                    
+                    // 添加到棋盘
+                    this.board.appendChild(el);
+                });
+            }
+
+            handleCardClick(el, index) {
+                // 检查是否可点击
+                if (!this.canSelect || 
+                    el.classList.contains('matched') || 
+                    el.classList.contains('selected')) {
+                    return;
+                }
+
+                const cardData = this.cardsData[index];
+                
+                // 没有选中的卡片
+                if (!this.selectedCard) {
+                    this.selectedCard = { el, index, data: cardData };
+                    el.classList.add('selected');
+                } 
+                // 已经选中了卡片
+                else {
+                    const first = this.selectedCard;
+                    const second = { el, index, data: cardData };
+                    
+                    // 相同类型的卡片，更换选中
+                    if (first.data.type === second.data.type) {
+                        first.el.classList.remove('selected');
+                        this.selectedCard = second;
+                        second.el.classList.add('selected');
+                        return;
+                    }
+
+                    // 检查是否匹配：不同类型且solutionKey相同（核心规则）
+                    if (first.data.solutionKey === second.data.solutionKey) {
+                        // 匹配成功
+                        this.matchSuccess(first, second);
+                    } else {
+                        // 匹配失败
+                        this.matchFail(first, second);
+                    }
+                }
+            }
+
+            matchSuccess(first, second) {
+                this.canSelect = false;
+                SoundManager.playMatch(); 
+
+                setTimeout(() => {
+                    // 标记卡片为已匹配
+                    first.el.classList.add('matched');
+                    second.el.classList.add('matched');
+                    first.el.classList.remove('selected');
+                    second.el.classList.remove('selected');
+                    
+                    // 更新卡片数据的匹配状态
+                    this.cardsData[first.index].isMatched = true;
+                    this.cardsData[second.index].isMatched = true;
+                    
+                    // 更新分数和匹配计数
+                    this.score += 10;
+                    this.matchedPairs++;
+                    this.updateDisplay();
+                    
+                    // 重置选中状态
+                    this.selectedCard = null;
+                    this.canSelect = true;
+
+                    // 检查游戏是否结束：所有卡片都已匹配（匹配对数达到总对数）
+                    if (this.matchedPairs === this.totalPairs) {
+                        GameController.checkGameEnd(this.id);
+                    }
+                }, 200);
+            }
+
+            matchFail(first, second) {
+                this.canSelect = false;
+                
+                // 更新错误计数和分数
+                this.errorCount++;
+                this.updateDisplay();
+                
+                // 播放错误音效
+                SoundManager.playError(); 
+
+                // 错误提示样式
+                first.el.style.background = '#e74c3c';
+                second.el.style.background = '#e74c3c';
+                first.el.style.color = 'white';
+                second.el.style.color = 'white';
+
+                setTimeout(() => {
+                    // 恢复样式
+                    first.el.classList.remove('selected');
+                    second.el.classList.remove('selected');
+                    first.el.style.background = '';
+                    second.el.style.background = '';
+                    first.el.style.color = '';
+                    second.el.style.color = '';
+                    
+                    // 重置选中状态
+                    this.selectedCard = null;
+                    this.canSelect = true;
+                }, 500);
+            }
+
+            disable() {
+                this.canSelect = false;
+            }
+        }
+
+        // === 初始化 ===
+        window.addEventListener('load', () => {
+            // 初始化响应式
+            window.addEventListener('resize', () => Confetti.resize());
+            
+            // 初始化游戏
+            GameController.init();
+            
+            // 初始化彩带画布
+            Confetti.resize();
+        });
+    </script>
+</body>
+</html>
