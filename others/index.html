@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f1f1f">
+<link rel="icon" href="../favicon.ico">
+<title>FGYL的其他东西😅</title>
+<style>
+  :root{
+    color-scheme: dark;
+    --brand:#479ef5; --brand-hover:#62abf5; --brand-pressed:#2886de;
+    --brand-fg:#000; --brand-tint:#0c3b5e;
+    --bg:#1f1f1f; --surface:#292929;
+    --stroke:#3d3d3d; --stroke-strong:#525252;
+    --fill-subtle:#333; --fill-hover:#3a3a3a; --fill-pressed:#444;
+    --text:#fff; --text-2:#e0e0e0; --text-3:#adadad;
+    --radius:4px;
+    --shadow-4:0 1px 3px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);
+    --shadow-8:0 4px 8px rgba(0,0,0,.5),0 0 2px rgba(0,0,0,.35);
+    --font:"Segoe UI Variable Text","Segoe UI",-apple-system,BlinkMacSystemFont,
+           "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{
+    margin:0;min-height:100vh;font-family:var(--font);font-size:14px;line-height:1.5;
+    color:var(--text);background-color:var(--bg);
+    background-image:radial-gradient(1100px 460px at 50% -200px,rgba(71,158,245,.1) 0%,rgba(71,158,245,0) 70%);
+    background-repeat:no-repeat;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  }
+  a{color:inherit;text-decoration:none}
+  :focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:2px}
+
+  /* 应用栏 */
+  .app-bar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(41,41,41,.82);backdrop-filter:blur(14px) saturate(160%);
+    -webkit-backdrop-filter:blur(14px) saturate(160%);border-bottom:1px solid var(--stroke);
+  }
+  .app-bar-inner{
+    display:flex;align-items:center;gap:12px;height:52px;max-width:960px;margin:0 auto;padding:0 24px;
+  }
+  .back-link{
+    display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 8px 0 4px;
+    border-radius:var(--radius);font-size:14px;color:var(--text-2);transition:background-color .12s,color .12s;
+  }
+  .back-link:hover{background:var(--fill-hover);color:var(--text)}
+  .back-link:active{background:var(--fill-pressed)}
+  .app-bar .divider{width:1px;height:16px;background:var(--stroke)}
+  .app-title{font-size:14px;font-weight:600;color:var(--text-2)}
+
+  /* 页面 */
+  .container{max-width:960px;margin:0 auto;padding:32px 24px 56px}
+  .page-head{margin-bottom:24px}
+  .page-head h1{margin:0 0 8px;font-size:28px;line-height:1.25;font-weight:600;letter-spacing:-.01em}
+  .page-head p{margin:0;max-width:640px;font-size:14px;color:var(--text-3)}
+
+  .panel-list{display:flex;flex-direction:column;gap:12px}
+  .panel{
+    padding:20px;background:var(--surface);border:1px solid var(--stroke);border-radius:var(--radius);
+    box-shadow:var(--shadow-4);transition:box-shadow .16s,border-color .16s;
+    animation:panel-in .34s cubic-bezier(.33,0,.67,1) both;
+  }
+  .panel:hover{box-shadow:var(--shadow-8);border-color:var(--stroke-strong)}
+  @keyframes panel-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .panel:nth-child(1){animation-delay:.02s}
+  .panel:nth-child(2){animation-delay:.07s}
+
+  .panel-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  .panel-icon{
+    flex:0 0 auto;display:grid;place-items:center;width:40px;height:40px;border-radius:var(--radius);
+  }
+  .icon-blue{background:#0c3b5e;color:#479ef5}
+  .icon-purple{background:#2b2545;color:#b9a8f5}
+  .panel-title{margin:0;font-size:16px;font-weight:600;line-height:1.4}
+  .panel-sub{margin:2px 0 0;font-size:12px;color:var(--text-3)}
+
+  /* ===== 音乐播放器 ===== */
+  .player{
+    display:flex;gap:16px;align-items:center;padding:16px;
+    background:var(--fill-subtle);border:1px solid var(--stroke);border-radius:var(--radius);
+  }
+  .player-cover{
+    flex:0 0 auto;width:72px;height:72px;border-radius:var(--radius);background:var(--fill-hover);
+    object-fit:cover;display:block;
+  }
+  .player-info{flex:1;min-width:0}
+  .player-title{
+    margin:0;font-size:15px;font-weight:600;line-height:1.4;color:var(--text);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .player-author{margin:2px 0 0;font-size:12px;color:var(--text-3)}
+  .player-progress{
+    display:flex;align-items:center;gap:10px;margin-top:8px;
+  }
+  .progress-track{
+    flex:1;height:4px;background:var(--fill-hover);border-radius:2px;cursor:pointer;position:relative;
+  }
+  .progress-fill{height:100%;width:0;background:var(--brand);border-radius:2px;transition:width .1s linear}
+  .player-time{font-size:11px;color:var(--text-3);font-variant-numeric:tabular-nums;min-width:72px;text-align:right}
+
+  .player-controls{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .ctrl-btn{
+    display:grid;place-items:center;width:32px;height:32px;padding:0;
+    font-family:inherit;color:var(--text-2);background:transparent;border:1px solid transparent;
+    border-radius:var(--radius);cursor:pointer;transition:background-color .12s,color .12s;
+  }
+  .ctrl-btn:hover{background:var(--fill-hover);color:var(--text)}
+  .ctrl-btn:active{background:var(--fill-pressed)}
+  .ctrl-btn.is-active{color:var(--brand)}
+  .ctrl-btn-play{width:36px;height:36px;color:var(--brand-fg);background:var(--brand)}
+  .ctrl-btn-play:hover{background:var(--brand-hover);color:var(--brand-fg)}
+  .ctrl-btn-play:active{background:var(--brand-pressed)}
+
+  .volume-wrap{display:flex;align-items:center;gap:6px;margin-left:auto}
+  .volume-slider{
+    width:72px;height:4px;-webkit-appearance:none;appearance:none;
+    background:var(--fill-hover);border-radius:2px;outline:none;
+  }
+  .volume-slider::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:12px;height:12px;border-radius:50%;
+    background:var(--brand);cursor:pointer;border:2px solid var(--surface);
+  }
+  .volume-slider::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--brand);cursor:pointer;border:2px solid var(--surface)}
+
+  /* 添加歌曲 */
+  .add-row{display:flex;gap:8px;margin-top:14px}
+  .add-input{
+    flex:1;min-width:0;height:34px;padding:0 10px;font-family:inherit;font-size:13px;
+    color:var(--text);background:var(--surface);border:1px solid var(--stroke-strong);
+    border-radius:var(--radius);transition:border-color .12s,box-shadow .12s;
+  }
+  .add-input::placeholder{color:var(--text-3)}
+  .add-input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
+  .btn-primary{
+    display:inline-flex;align-items:center;justify-content:center;gap:5px;height:34px;padding:0 14px;
+    font-family:inherit;font-size:13px;font-weight:600;color:var(--brand-fg);
+    background:var(--brand);border:1px solid transparent;border-radius:var(--radius);
+    cursor:pointer;white-space:nowrap;transition:background-color .12s;
+  }
+  .btn-primary:hover{background:var(--brand-hover)}
+  .btn-primary:active{background:var(--brand-pressed)}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+  .btn-primary:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+  /* 歌曲列表 */
+  .song-list{margin:14px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px;max-height:280px;overflow-y:auto}
+  .song-item{
+    display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--radius);
+    cursor:pointer;transition:background-color .12s;border:1px solid transparent;
+  }
+  .song-item:hover{background:var(--fill-hover)}
+  .song-item.is-current{background:var(--brand-tint);border-color:#1a5c8f}
+  .song-item-num{
+    flex:0 0 auto;width:22px;text-align:center;font-size:12px;color:var(--text-3);font-variant-numeric:tabular-nums;
+  }
+  .song-item.is-current .song-item-num{color:var(--brand)}
+  .song-item-body{flex:1;min-width:0}
+  .song-item-title{
+    margin:0;font-size:13px;font-weight:500;color:var(--text);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .song-item-author{margin:1px 0 0;font-size:11px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .song-item-del{
+    flex:0 0 auto;display:grid;place-items:center;width:24px;height:24px;padding:0;
+    color:var(--text-3);background:transparent;border:1px solid transparent;border-radius:var(--radius);
+    cursor:pointer;opacity:0;transition:opacity .12s,background-color .12s,color .12s;
+  }
+  .song-item:hover .song-item-del,.song-item-del:focus-visible{opacity:1}
+  .song-item-del:hover{color:#ff8a8a;background:rgba(255,110,110,.12)}
+
+  /* 详情 / 歌词 */
+  .detail-toggle{display:flex;justify-content:center;margin-top:10px}
+  .btn-ghost{
+    display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;
+    font-family:inherit;font-size:12px;color:var(--text-3);background:transparent;
+    border:1px solid var(--stroke);border-radius:var(--radius);cursor:pointer;
+    transition:background-color .12s,color .12s;
+  }
+  .btn-ghost:hover{background:var(--fill-hover);color:var(--text-2)}
+
+  .detail{
+    margin-top:12px;padding:16px;background:var(--fill-subtle);
+    border:1px solid var(--stroke);border-radius:var(--radius);display:none;
+  }
+  .detail.is-open{display:block}
+  .detail-layout{display:flex;gap:16px;align-items:flex-start}
+  .detail-cover{
+    flex:0 0 auto;width:120px;height:120px;border-radius:var(--radius);object-fit:cover;background:var(--fill-hover);
+  }
+  .lyrics-scroll{
+    flex:1;min-width:0;height:180px;overflow-y:auto;padding-right:6px;
+    position:relative;                 /* 让 offsetTop / getBoundingClientRect 以容器为基准 */
+    scroll-behavior:smooth;
+    mask-image:linear-gradient(to bottom,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%);
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%);
+  }
+  .lyric-line{
+    margin:0;padding:4px 0;font-size:13px;line-height:1.5;color:var(--text-3);
+    transition:color .2s,font-size .2s;text-align:center;
+  }
+  .lyric-line.is-active{color:var(--brand);font-weight:600;font-size:14px}
+  .lyrics-empty{font-size:12px;color:var(--text-3);text-align:center;padding:40px 0}
+
+  /* 收藏 */
+  .fav-section + .fav-section{margin-top:18px}
+  .fav-section-title{
+    display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:13px;
+    font-weight:600;color:var(--text-2);
+  }
+  .fav-section-title::before{content:"";width:3px;height:14px;background:var(--brand);border-radius:1px}
+  .fav-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px}
+  .fav-item{
+    display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--radius);
+    transition:background-color .12s;
+  }
+  .fav-item:hover{background:var(--fill-hover)}
+  .fav-item-body{flex:1;min-width:0}
+  .fav-name{margin:0;font-size:13px;font-weight:500;color:var(--text)}
+  .fav-desc{margin:1px 0 0;font-size:11px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fav-go{
+    flex:0 0 auto;display:inline-flex;align-items:center;gap:3px;height:26px;padding:0 9px;
+    font-size:12px;font-weight:600;color:var(--brand);background:var(--brand-tint);
+    border:1px solid #1a5c8f;border-radius:var(--radius);white-space:nowrap;
+    transition:background-color .12s;
+  }
+  .fav-go:hover{background:#11538a}
+
+  /* 加载/提示 */
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(8px);
+    padding:8px 14px;font-size:13px;color:var(--text-2);background:#3a3a3a;
+    border:1px solid var(--stroke-strong);border-radius:var(--radius);box-shadow:var(--shadow-8);
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:100;max-width:90vw;text-align:center;
+  }
+  .toast.is-show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .page-footer{
+    max-width:960px;margin:0 auto;padding:20px 24px 32px;display:flex;flex-wrap:wrap;
+    justify-content:space-between;gap:8px 16px;font-size:12px;color:var(--text-3);
+    border-top:1px solid var(--stroke);
+  }
+
+  /* 移动端 */
+  @media (max-width:640px){
+    .app-bar-inner{height:48px;padding:0 12px;gap:10px}
+    .back-link{padding:0 6px 0 2px}
+    .container{padding:20px 12px 40px}
+    .page-head{margin-bottom:16px}
+    .page-head h1{font-size:22px}
+    .page-head p{font-size:13px}
+    .panel{padding:16px}
+    .player{gap:12px;padding:12px}
+    .player-cover{width:56px;height:56px}
+    .player-title{font-size:14px}
+    .volume-wrap{margin-left:0;width:100%;margin-top:4px}
+    .volume-slider{flex:1;width:auto}
+    .add-row{flex-wrap:wrap}
+    .add-input{flex:1 1 100%}
+    .btn-primary{width:100%}
+    .song-list{max-height:240px}
+    .song-item-del{opacity:1}
+    .detail-layout{flex-direction:column;align-items:center}
+    .detail-cover{width:100px;height:100px}
+    .lyrics-scroll{width:100%;height:160px}
+    .fav-item{flex-wrap:wrap;gap:6px 10px}
+    .fav-go{width:100%;justify-content:center;height:30px}
+    .page-footer{padding:16px 12px 24px}
+  }
+  @media (max-width:360px){
+    .back-link span{display:none}
+    .back-link{padding:0 6px}
+    .player{flex-wrap:wrap}
+    .player-cover{width:48px;height:48px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-bar">
+  <div class="app-bar-inner">
+    <a class="back-link" href="../" aria-label="返回主页">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 5 8 12l7 7"/>
+      </svg>
+      <span>返回主页</span>
+    </a>
+    <span class="divider" aria-hidden="true"></span>
+    <span class="app-title">其他</span>
+  </div>
+</header>
+
+<main class="container">
+  <div class="page-head">
+    <h1>其他</h1>
+    <p>梦到什么放什么。</p>
+  </div>
+
+  <div class="panel-list">
+
+    <!-- ========== 板块 1：音乐 ========== -->
+    <article class="panel">
+      <div class="panel-head">
+        <div class="panel-icon icon-blue" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18V6l10-2v12"/>
+            <circle cx="6.5" cy="18" r="2.5"/>
+            <circle cx="16.5" cy="16" r="2.5"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="panel-title">音乐</h2>
+          <p class="panel-sub">Music · 网易云音源</p>
+        </div>
+      </div>
+
+      <!-- 播放器 -->
+      <div class="player">
+        <img class="player-cover" id="playerCover" alt=""
+             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Crect width='72' height='72' fill='%233a3a3a'/%3E%3Cpath d='M28 44V24l18-4v20' stroke='%236b6b6b' stroke-width='2' fill='none'/%3E%3Ccircle cx='24' cy='44' r='4' stroke='%236b6b6b' stroke-width='2' fill='none'/%3E%3Ccircle cx='42' cy='40' r='4' stroke='%236b6b6b' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+        <div class="player-info">
+          <p class="player-title" id="playerTitle">还没有添加歌曲</p>
+          <p class="player-author" id="playerAuthor">在下方输入网易云歌曲 ID 添加</p>
+          <div class="player-progress">
+            <div class="progress-track" id="progressTrack" role="slider" aria-label="播放进度"
+                 aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <span class="player-time" id="playerTime">00:00 / 00:00</span>
+          </div>
+          <div class="player-controls">
+            <button class="ctrl-btn" id="btnPrev" type="button" aria-label="上一首">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 5 9 12l10 7V5Z"/><path d="M6 5v14"/>
+              </svg>
+            </button>
+            <button class="ctrl-btn ctrl-btn-play" id="btnPlay" type="button" aria-label="播放">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M8 5v14l11-7L8 5Z"/>
+              </svg>
+            </button>
+            <button class="ctrl-btn" id="btnNext" type="button" aria-label="下一首">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 5l10 7L5 19V5Z"/><path d="M18 5v14"/>
+              </svg>
+            </button>
+            <button class="ctrl-btn" id="btnLoop" type="button" aria-label="循环模式：列表循环">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 3.5 20.5 7 17 10.5"/><path d="M3.5 11V9a2 2 0 0 1 2-2h15"/>
+                <path d="M7 20.5 3.5 17 7 13.5"/><path d="M20.5 13v2a2 2 0 0 1-2 2h-15"/>
+              </svg>
+            </button>
+            <div class="volume-wrap">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/>
+              </svg>
+              <input class="volume-slider" id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.7"
+                     aria-label="音量">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 添加歌曲 -->
+      <div class="add-row">
+        <input class="add-input" id="songIdInput" type="text" inputmode="numeric"
+               placeholder="输入网易云歌曲 ID，例如 347230" aria-label="网易云歌曲 ID">
+        <button class="btn-primary" id="btnAddSong" type="button">添加歌曲</button>
+      </div>
+
+      <!-- 歌曲列表 -->
+      <ul class="song-list" id="songList" aria-label="播放列表"></ul>
+
+      <!-- 详情切换 -->
+      <div class="detail-toggle">
+        <button class="btn-ghost" id="btnDetail" type="button" aria-expanded="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+          查看封面与歌词
+        </button>
+      </div>
+
+      <!-- 详情面板 -->
+      <div class="detail" id="detailPanel">
+        <div class="detail-layout">
+          <img class="detail-cover" id="detailCover" alt=""
+               src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' fill='%233a3a3a'/%3E%3C/svg%3E">
+          <div class="lyrics-scroll" id="lyricsScroll" aria-label="歌词">
+            <p class="lyrics-empty">播放歌曲后显示歌词</p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ========== 板块 2：收藏 ========== -->
+    <article class="panel">
+      <div class="panel-head">
+        <div class="panel-icon icon-purple" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4-7 4V4.5a1 1 0 0 1 1-1Z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="panel-title">收藏</h2>
+          <p class="panel-sub">Bookmarks · 常用网站</p>
+        </div>
+      </div>
+
+      <div class="fav-section">
+        <h3 class="fav-section-title">开发与代码</h3>
+        <ul class="fav-list">
+          <li class="fav-item">
+            <div class="fav-item-body">
+              <p class="fav-name">GitHub</p>
+              <p class="fav-desc">代码托管与协作，找轮椅、CtrlCV的第一站</p>
+            </div>
+            <a class="fav-go" href="https://github.com" target="_blank" rel="noopener noreferrer">前往</a>
+          </li>
+          <li class="fav-item">
+            <div class="fav-item-body">
+              <p class="fav-name">Deepseek</p>
+              <p class="fav-desc">最可靠的大肥鱼😍😍😍😍</p>
+            </div>
+            <a class="fav-go" href="https://chat.deepseek.com" target="_blank" rel="noopener noreferrer">前往</a>
+          </li>
+          <li class="fav-item">
+            <div class="fav-item-body">
+              <p class="fav-name">豆包</p>
+              <p class="fav-desc">智商堪忧😂😂😂😂</p>
+            </div>
+            <a class="fav-go" href="https://doubao.com" target="_blank" rel="noopener noreferrer">前往</a>
+          </li>
+          <li class="fav-item">
+            <div class="fav-item-body">
+              <p class="fav-name">Python 蟒蛇</p>
+              <p class="fav-desc">PYTHON, YES!</p>
+            </div>
+            <a class="fav-go" href="https://python.org" target="_blank" rel="noopener noreferrer">前往</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="fav-section">
+        <h3 class="fav-section-title">滚木与滚副</h3>
+        <ul class="fav-list">
+          <li class="fav-item">
+            <div class="fav-item-body">
+              <p class="fav-name">MTRBBS 木头人步兵师</p>
+              <p class="fav-desc">麦块福特木头人模组的官方论坛，容易抽风</p>
+            </div>
+            <a class="fav-go" href="https://mtrbbs.top" target="_blank" rel="noopener noreferrer">前往</a>
+          </li>
+          <li class="fav-item">
+            <div class="fav-item-body">
+              <p class="fav-name">Modrinth</p>
+              <p class="fav-desc">请输入文本</p>
+            </div>
+            <a class="fav-go" href="https://modrinth.com" target="_blank" rel="noopener noreferrer">前往</a>
+          </li>
+          <li class="fav-item">
+            <div class="fav-item-body">
+              <p class="fav-name">CurseForge 诅咒锻造</p>
+              <p class="fav-desc">老资历吓哭了</p>
+            </div>
+            <a class="fav-go" href="https://curseforge.com" target="_blank" rel="noopener noreferrer">前往</a>
+          </li>
+          <li class="fav-item">
+            <div class="fav-item-body">
+              <p class="fav-name">MC百科</p>
+              <p class="fav-desc">权威、强大、好用、轮椅</p>
+            </div>
+            <a class="fav-go" href="https://mcmod.cn" target="_blank" rel="noopener noreferrer">前往</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="fav-section">
+        <h3 class="fav-section-title">Ave与慕机咖</h3>
+        <ul class="fav-list">
+          <li class="fav-item">
+            <div class="fav-item-body">
+              <p class="fav-name">豪哥全防万能解锁工具箱</p>
+              <p class="fav-desc">一键解锁vivo iQOO 小米红米 华为 荣耀 努比亚红魔 无视底层无视SOC无视系统一键通杀</p>
+            </div>
+            <a class="fav-go" href="https://www.bilibili.com/video/BV1GJ411x7h7/" target="_blank" rel="noopener noreferrer">前往</a>
+          </li>
+          <li class="fav-item">
+            <div class="fav-item-body">
+              <p class="fav-name">晨钟网络科技官网</p>
+              <p class="fav-desc">承重墙！承重墙！承重墙！</p>
+            </div>
+            <a class="fav-go" href="https://jamcz.com" target="_blank" rel="noopener noreferrer">前往</a>
+          </li>
+          <li class="fav-item">
+            <div class="fav-item-body">
+              <p class="fav-name">PICUI图床</p>
+              <p class="fav-desc">清州服务器御用图床</p>
+            </div>
+            <a class="fav-go" href="https://picui.cn" target="_blank" rel="noopener noreferrer">前往</a>
+          </li>
+          <li class="fav-item">
+            <div class="fav-item-body">
+              <p class="fav-name">柚坛搞机工具箱</p>
+              <p class="fav-desc">好用就完了！😎😎😎😎</p>
+            </div>
+            <a class="fav-go" href="https://toolbox.uotan.cn" target="_blank" rel="noopener noreferrer">前往</a>
+          </li>
+        </ul>
+      </div>
+    </article>
+
+  </div>
+</main>
+
+<footer class="page-footer">
+  <span>© 2078 FGYL的云站 FGYL's CloudWeb</span>
+  <span>Built with Fluent Design</span>
+</footer>
+
+<!-- 音频元素（隐藏） -->
+<audio id="audioEl" preload="metadata"></audio>
+
+<!-- 提示条 -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ============================================================
+     配置
+     ============================================================ */
+  const API_BASE = 'https://api.i-meto.com/meting/api';
+  const PLAYLIST_KEY = 'other:playlist:v1';   // 播放列表存储键
+
+  /* ============================================================
+     DOM
+     ============================================================ */
+  const audio = document.getElementById('audioEl');
+
+  const coverEl   = document.getElementById('playerCover');
+  const titleEl   = document.getElementById('playerTitle');
+  const authorEl  = document.getElementById('playerAuthor');
+  const timeEl    = document.getElementById('playerTime');
+  const fillEl    = document.getElementById('progressFill');
+  const trackEl   = document.getElementById('progressTrack');
+
+  const btnPrev   = document.getElementById('btnPrev');
+  const btnPlay   = document.getElementById('btnPlay');
+  const btnNext   = document.getElementById('btnNext');
+  const btnLoop   = document.getElementById('btnLoop');
+  const volSlider = document.getElementById('volumeSlider');
+
+  const songIdInput = document.getElementById('songIdInput');
+  const btnAddSong  = document.getElementById('btnAddSong');
+  const songListEl  = document.getElementById('songList');
+
+  const btnDetail    = document.getElementById('btnDetail');
+  const detailPanel  = document.getElementById('detailPanel');
+  const detailCover  = document.getElementById('detailCover');
+  const lyricsScroll = document.getElementById('lyricsScroll');
+
+  const toastEl = document.getElementById('toast');
+
+  /* ============================================================
+     状态
+     ============================================================ */
+  let playlist = [];        // [{ id, title, author, url, pic, lrcUrl, lrcText, lyrics }]
+  let current  = -1;
+  let loopMode = 'list';    // 'list' | 'one' | 'none'
+  let loadingId = null;
+  let lastActiveIndex = -1; // 上一次高亮的歌词行，避免重复滚动
+
+  const PLAY_ICON =
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+    '<path d="M8 5v14l11-7L8 5Z"/></svg>';
+  const PAUSE_ICON =
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+    '<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>';
+  const LOOP_LIST_ICON =
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M17 3.5 20.5 7 17 10.5"/><path d="M3.5 11V9a2 2 0 0 1 2-2h15"/>' +
+    '<path d="M7 20.5 3.5 17 7 13.5"/><path d="M20.5 13v2a2 2 0 0 1-2 2h-15"/></svg>';
+  const LOOP_ONE_ICON =
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M17 3.5 20.5 7 17 10.5"/><path d="M3.5 11V9a2 2 0 0 1 2-2h15"/>' +
+    '<path d="M7 20.5 3.5 17 7 13.5"/><path d="M20.5 13v2a2 2 0 0 1-2 2h-15"/>' +
+    '<path d="M12 10v4"/><path d="M12 10l1.2-.8"/></svg>';
+  const LOOP_NONE_ICON =
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M17 3.5 20.5 7 17 10.5"/><path d="M3.5 11V9a2 2 0 0 1 2-2h15"/>' +
+    '<path d="M7 20.5 3.5 17 7 13.5"/><path d="M20.5 13v2a2 2 0 0 1-2 2h-15"/></svg>';
+
+  /* ============================================================
+     工具
+     ============================================================ */
+  function showToast(msg, ms){
+    toastEl.textContent = msg;
+    toastEl.classList.add('is-show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toastEl.classList.remove('is-show'), ms || 2600);
+  }
+
+  function fmtTime(sec){
+    if(!isFinite(sec) || sec < 0) sec = 0;
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }
+
+  function setCover(src){
+    if(src){
+      coverEl.src = src;
+      detailCover.src = src;
+    }
+  }
+
+  /* ============================================================
+     歌词解析
+     ============================================================ */
+  function parseLrc(text){
+    if(!text) return [];
+    const lines = text.split(/\r?\n/);
+    const out = [];
+    const re = /\[(\d{1,3}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g;
+
+    lines.forEach(line => {
+      const matches = [...line.matchAll(re)];
+      if(matches.length === 0) return;
+      const content = line.replace(re, '').trim();
+      if(!content) return;
+
+      matches.forEach(m => {
+        const min = parseInt(m[1], 10);
+        const sec = parseInt(m[2], 10);
+        let ms = 0;
+        if(m[3]){
+          ms = m[3].length === 3 ? parseInt(m[3], 10) : parseInt(m[3], 10) * 10;
+        }
+        out.push({ time: min * 60 + sec + ms / 1000, text: content });
+      });
+    });
+
+    out.sort((a, b) => a.time - b.time);
+    const dedup = [];
+    out.forEach(item => {
+      if(!dedup.length || dedup[dedup.length - 1].text !== item.text) dedup.push(item);
+    });
+    return dedup;
+  }
+
+  function renderLyrics(lyrics){
+    lyricsScroll.innerHTML = '';
+    if(!lyrics || lyrics.length === 0){
+      lyricsScroll.innerHTML = '<p class="lyrics-empty">暂无歌词</p>';
+      lastActiveIndex = -1;
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    lyrics.forEach((line, i) => {
+      const p = document.createElement('p');
+      p.className = 'lyric-line';
+      p.dataset.index = i;
+      p.textContent = line.text;
+      frag.appendChild(p);
+    });
+    lyricsScroll.appendChild(frag);
+
+    // DOM 重建后旧索引已失效，重置
+    lastActiveIndex = -1;
+  }
+
+  function syncLyrics(currentTime){
+    if(current < 0) return;
+    const song = playlist[current];
+    if(!song || !song.lyrics || song.lyrics.length === 0) return;
+
+    const lines = lyricsScroll.querySelectorAll('.lyric-line');
+    if(lines.length === 0) return;
+
+    // 计算当前应高亮的行
+    let activeIndex = -1;
+    for(let i = 0; i < song.lyrics.length; i++){
+      if(song.lyrics[i].time <= currentTime + 0.2) activeIndex = i;
+      else break;
+    }
+
+    // 高亮没变化就不重复滚动，避免动画被高频打断
+    if(activeIndex === lastActiveIndex) return;
+    lastActiveIndex = activeIndex;
+
+    lines.forEach((el, i) => {
+      el.classList.toggle('is-active', i === activeIndex);
+    });
+
+    if(activeIndex < 0) return;
+
+    // 用 getBoundingClientRect 计算元素在容器内的真实偏移
+    const activeEl = lines[activeIndex];
+    const containerRect = lyricsScroll.getBoundingClientRect();
+    const elRect = activeEl.getBoundingClientRect();
+    const offsetInContainer = elRect.top - containerRect.top + lyricsScroll.scrollTop;
+    const targetTop = offsetInContainer - (lyricsScroll.clientHeight - activeEl.clientHeight) / 2;
+
+    lyricsScroll.scrollTo({
+      top: Math.max(0, targetTop),
+      behavior: 'smooth'
+    });
+  }
+
+  /* ============================================================
+     数据请求
+     ============================================================ */
+  async function fetchSongInfo(id){
+    const url = `${API_BASE}?server=netease&type=song&id=${encodeURIComponent(id)}&r=${Date.now()}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('网络错误');
+    const data = await res.json();
+    if(!Array.isArray(data) || data.length === 0) throw new Error('没有找到这首歌');
+    return data[0];
+  }
+
+  async function fetchLyricText(lrcUrl){
+    if(!lrcUrl) return '';
+    try{
+      const res = await fetch(lrcUrl);
+      if(!res.ok) return '';
+      return await res.text();
+    }catch(e){
+      return '';
+    }
+  }
+
+  /* ============================================================
+     播放列表持久化
+     ============================================================ */
+  function savePlaylist(){
+    try{
+      const data = playlist.map(s => ({
+        id: s.id,
+        title: s.title,
+        author: s.author,
+        pic: s.pic,
+        lrcUrl: s.lrcUrl,
+        lrcText: s.lrcText || ''
+      }));
+      localStorage.setItem(PLAYLIST_KEY, JSON.stringify(data));
+    }catch(e){
+      console.warn('播放列表保存失败：', e);
+    }
+  }
+
+  function loadPlaylist(){
+    try{
+      const raw = localStorage.getItem(PLAYLIST_KEY);
+      if(!raw) return [];
+      const arr = JSON.parse(raw);
+      if(!Array.isArray(arr)) return [];
+
+      return arr
+        .filter(s => s && s.id)
+        .map(s => {
+          const id = String(s.id);
+          return {
+            id,
+            title: s.title || '未知歌曲',
+            author: s.author || '未知歌手',
+            // 播放地址统一由 id 生成，保证规则更新后旧数据也生效
+            url: `https://music.163.com/song/media/outer/url?id=${id}`,
+            pic: s.pic || '',
+            lrcUrl: s.lrcUrl || '',
+            lrcText: s.lrcText || '',
+            lyrics: s.lrcText ? parseLrc(s.lrcText) : null
+          };
+        });
+    }catch(e){
+      console.warn('播放列表读取失败：', e);
+      return [];
+    }
+  }
+
+  /* ============================================================
+     播放列表渲染
+     ============================================================ */
+  function renderSongList(){
+    songListEl.innerHTML = '';
+    if(playlist.length === 0){
+      songListEl.innerHTML = '<li style="padding:16px;text-align:center;font-size:12px;color:var(--text-3);">列表为空，添加一首歌试试</li>';
+      return;
+    }
+
+    const frag = document.createDocumentFragment();
+    playlist.forEach((song, index) => {
+      const li = document.createElement('li');
+      li.className = 'song-item' + (index === current ? ' is-current' : '');
+
+      const num = document.createElement('span');
+      num.className = 'song-item-num';
+      num.textContent = index === current && !audio.paused ? '▶' : String(index + 1);
+
+      const body = document.createElement('div');
+      body.className = 'song-item-body';
+      const t = document.createElement('p');
+      t.className = 'song-item-title';
+      t.textContent = song.title || '未知歌曲';
+      const a = document.createElement('p');
+      a.className = 'song-item-author';
+      a.textContent = song.author || '未知歌手';
+      body.append(t, a);
+
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'song-item-del';
+      del.setAttribute('aria-label', '从列表移除');
+      del.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+        'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M5 7h14"/><path d="M9 7V5h6v2"/><path d="M7 7l1 12h8l1-12"/></svg>';
+      del.addEventListener('click', e => {
+        e.stopPropagation();
+        removeSong(index);
+      });
+
+      li.append(num, body, del);
+      li.addEventListener('click', () => playIndex(index));
+      frag.appendChild(li);
+    });
+    songListEl.appendChild(frag);
+  }
+
+  /* ============================================================
+     播放控制
+     ============================================================ */
+  function updatePlayerUI(){
+    if(current < 0 || !playlist[current]){
+      titleEl.textContent = '还没有添加歌曲';
+      authorEl.textContent = '在下方输入网易云歌曲 ID 添加';
+      return;
+    }
+    const song = playlist[current];
+    titleEl.textContent = song.title || '未知歌曲';
+    authorEl.textContent = song.author || '未知歌手';
+    setCover(song.pic);
+    renderLyrics(song.lyrics);
+  }
+
+  async function playIndex(index){
+    if(index < 0 || index >= playlist.length) return;
+    if(loadingId === playlist[index].id) return;
+
+    current = index;
+    const song = playlist[current];
+    loadingId = song.id;
+
+    updatePlayerUI();
+    renderSongList();
+
+    // 歌词：未解析过则拉取，并缓存到存储
+    if(!song.lyrics && song.lrcUrl){
+      try{
+        const text = await fetchLyricText(song.lrcUrl);
+        song.lrcText = text;
+        song.lyrics = parseLrc(text);
+        renderLyrics(song.lyrics);
+        savePlaylist();   // 歌词缓存写回
+      }catch(e){ /* 歌词失败不影响播放 */ }
+    }else if(song.lyrics){
+      renderLyrics(song.lyrics);
+    }
+
+    audio.src = song.url;
+    audio.volume = parseFloat(volSlider.value);
+
+    try{
+      await audio.play();
+    }catch(e){
+      showToast('点击播放按钮开始播放');
+    }
+
+    loadingId = null;
+  }
+
+  function togglePlay(){
+    if(current < 0){
+      if(playlist.length > 0) playIndex(0);
+      else showToast('请先添加歌曲');
+      return;
+    }
+    // 从存储恢复后 audio 尚未加载当前歌曲
+    if(!audio.getAttribute('src')){
+      playIndex(current);
+      return;
+    }
+    if(audio.paused){
+      audio.play().catch(() => showToast('播放失败，可能是版权限制'));
+    }else{
+      audio.pause();
+    }
+  }
+
+  function playPrev(){
+    if(playlist.length === 0) return;
+    if(loopMode === 'one'){
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+      return;
+    }
+    let prev = current - 1;
+    if(prev < 0) prev = playlist.length - 1;
+    playIndex(prev);
+  }
+
+  function playNext(){
+    if(playlist.length === 0) return;
+    if(loopMode === 'one'){
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+      return;
+    }
+    let next = current + 1;
+    if(next >= playlist.length){
+      if(loopMode === 'list'){
+        next = 0;
+      }else{
+        audio.pause();
+        return;
+      }
+    }
+    playIndex(next);
+  }
+
+  function removeSong(index){
+    if(index < 0 || index >= playlist.length) return;
+    const wasCurrent = index === current;
+    playlist.splice(index, 1);
+
+    if(playlist.length === 0){
+      current = -1;
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+      titleEl.textContent = '还没有添加歌曲';
+      authorEl.textContent = '在下方输入网易云歌曲 ID 添加';
+      renderSongList();
+      renderLyrics([]);
+      updatePlayButton();
+      savePlaylist();
+      return;
+    }
+
+    if(wasCurrent){
+      if(index >= playlist.length) current = 0;
+      else current = index;
+      playIndex(current);
+    }else if(index < current){
+      current--;
+    }
+    renderSongList();
+    savePlaylist();
+  }
+
+  function updatePlayButton(){
+    if(audio.paused){
+      btnPlay.innerHTML = PLAY_ICON;
+      btnPlay.setAttribute('aria-label', '播放');
+    }else{
+      btnPlay.innerHTML = PAUSE_ICON;
+      btnPlay.setAttribute('aria-label', '暂停');
+    }
+  }
+
+  function updateLoopButton(){
+    if(loopMode === 'list'){
+      btnLoop.innerHTML = LOOP_LIST_ICON;
+      btnLoop.setAttribute('aria-label', '循环模式：列表循环');
+      btnLoop.classList.remove('is-active');
+    }else if(loopMode === 'one'){
+      btnLoop.innerHTML = LOOP_ONE_ICON;
+      btnLoop.setAttribute('aria-label', '循环模式：单曲循环');
+      btnLoop.classList.add('is-active');
+    }else{
+      btnLoop.innerHTML = LOOP_NONE_ICON;
+      btnLoop.setAttribute('aria-label', '循环模式：顺序播放');
+      btnLoop.classList.remove('is-active');
+    }
+  }
+
+  /* ============================================================
+     添加歌曲
+     ============================================================ */
+  async function addSong(){
+    const raw = songIdInput.value.trim();
+    if(!raw){ showToast('请输入歌曲 ID'); return; }
+    if(!/^\d+$/.test(raw)){ showToast('歌曲 ID 应为纯数字'); return; }
+
+    btnAddSong.disabled = true;
+    btnAddSong.textContent = '添加中…';
+
+    try{
+      const info = await fetchSongInfo(raw);
+
+      if(playlist.some(s => String(s.id) === String(raw))){
+        showToast('这首歌已经在列表里了');
+        return;
+      }
+
+      const song = {
+        id: String(raw),
+        title: info.title || '未知歌曲',
+        author: info.author || '未知歌手',
+        // 使用网易云官方外链直链
+        url: `https://music.163.com/song/media/outer/url?id=${raw}`,
+        pic: info.pic || '',
+        lrcUrl: info.lrc || '',
+        lrcText: '',
+        lyrics: null
+      };
+
+      playlist.push(song);
+      renderSongList();
+      savePlaylist();     // 新增后立即持久化
+      songIdInput.value = '';
+
+      if(current < 0){
+        current = playlist.length - 1;
+        updatePlayerUI();
+      }
+
+      showToast(`已添加：${song.title}`);
+    }catch(e){
+      showToast('添加失败，请检查歌曲 ID 或网络');
+    }finally{
+      btnAddSong.disabled = false;
+      btnAddSong.textContent = '添加歌曲';
+    }
+  }
+
+  /* ============================================================
+     事件绑定
+     ============================================================ */
+  btnPlay.addEventListener('click', togglePlay);
+  btnPrev.addEventListener('click', playPrev);
+  btnNext.addEventListener('click', playNext);
+
+  btnLoop.addEventListener('click', () => {
+    const order = ['list', 'one', 'none'];
+    loopMode = order[(order.indexOf(loopMode) + 1) % order.length];
+    updateLoopButton();
+    showToast(
+      loopMode === 'list' ? '列表循环' :
+      loopMode === 'one'  ? '单曲循环' : '顺序播放'
+    );
+  });
+
+  volSlider.addEventListener('input', () => {
+    audio.volume = parseFloat(volSlider.value);
+  });
+
+  btnAddSong.addEventListener('click', addSong);
+  songIdInput.addEventListener('keydown', e => {
+    if(e.key === 'Enter') addSong();
+  });
+
+  trackEl.addEventListener('click', e => {
+    if(!audio.duration) return;
+    const rect = trackEl.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    audio.currentTime = Math.max(0, Math.min(1, ratio)) * audio.duration;
+  });
+
+  audio.addEventListener('timeupdate', () => {
+    if(!audio.duration) return;
+    const pct = (audio.currentTime / audio.duration) * 100;
+    fillEl.style.width = pct + '%';
+    trackEl.setAttribute('aria-valuenow', String(Math.round(pct)));
+    timeEl.textContent = fmtTime(audio.currentTime) + ' / ' + fmtTime(audio.duration);
+    syncLyrics(audio.currentTime);
+  });
+
+  audio.addEventListener('play', () => {
+    updatePlayButton();
+    renderSongList();
+  });
+
+  audio.addEventListener('pause', () => {
+    updatePlayButton();
+    renderSongList();
+  });
+
+  audio.addEventListener('ended', () => {
+    if(loopMode === 'one'){
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    }else{
+      playNext();
+    }
+  });
+
+  audio.addEventListener('error', () => {
+    if(audio.src && current >= 0){
+      showToast('这首歌曲可能因版权限制无法播放');
+    }
+    updatePlayButton();
+  });
+
+  btnDetail.addEventListener('click', () => {
+    const open = detailPanel.classList.toggle('is-open');
+    btnDetail.setAttribute('aria-expanded', String(open));
+    btnDetail.innerHTML = open
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>收起详情'
+      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>查看封面与歌词';
+  });
+
+  /* ============================================================
+     初始化：先恢复存储中的播放列表
+     ============================================================ */
+  playlist = loadPlaylist();
+
+  if(playlist.length > 0){
+    current = 0;
+    updatePlayerUI();
+  }
+
+  updatePlayButton();
+  updateLoopButton();
+  renderSongList();
+  audio.volume = parseFloat(volSlider.value);
+
+})();
+</script>
+
+</body>
+</html>
